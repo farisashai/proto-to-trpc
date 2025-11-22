@@ -3,6 +3,7 @@ import path from "node:path";
 import { discoverProtoFiles } from "./discover";
 import { emitAppRouter } from "./emit-app-router";
 import { emitIndexFile } from "./emit-index";
+import { emitPackageJson } from "./emit-package-json";
 import { emitRouterFactory } from "./emit-router-factory";
 import { emitServiceRouters } from "./emit-service-router";
 import { postProcessPbFiles } from "./post-process-pb-files";
@@ -84,6 +85,9 @@ export async function runCodegen(options: CodegenOptions): Promise<void> {
 
 	log(onLog, "Emitting index file...");
 	await emitIndexFile(trpcOut);
+
+	log(onLog, "Emitting package.json...");
+	await emitPackageJson(resolvedOutDir);
 
 	log(onLog, "Code generation complete.");
 }

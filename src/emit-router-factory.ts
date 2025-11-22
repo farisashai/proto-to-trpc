@@ -31,6 +31,15 @@ import type { AnyService, MethodInfoUnary, Client } from "@connectrpc/connect";
 
 export const t = initTRPC.create();
 
+// Passthrough validator for Protobuf types - provides type safety without runtime validation
+export function protobuf<T>() {
+	return {
+		parse: (val: unknown) => val as T,
+		_input: undefined as unknown as T,
+		_output: undefined as unknown as T,
+	};
+}
+
 const QUERY_PREFIXES = ${queryVerbs} as const;
 const MUTATION_PREFIXES = ${mutationVerbs} as const;
 

@@ -24,8 +24,8 @@
 	],
 	"scripts": {
 		"build": "tsup",
-		"lint": "biome lint .",
-		"format": "biome format . --write",
+		"lint": "biome lint . --fix",
+		"format": "biome format . --fix",
 		"test": "vitest",
 		"test:watch": "vitest --watch",
 		"test:coverage": "vitest --coverage",

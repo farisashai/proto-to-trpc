@@ -18,10 +18,12 @@ Nothing yet.
 #### Critical Type Safety Fix
 
 - **Fixed tRPC procedures showing `any` types** - Resolved TypeScript showing `input: any, output: any` in IDE
-  - Changed from `.input(MessageClass)` to `.input<MessageClass>()` - using type parameters instead of runtime values
-  - Changed from `.output(MessageClass)` to `.output<MessageClass>()` - using type parameters instead of runtime values
+  - Created `protobuf<T>()` passthrough validator that tRPC accepts while maintaining type safety
+  - Changed from `.input(MessageClass)` to `.input(protobuf<MessageClass>())`
+  - Changed from `.output(MessageClass)` to `.output(protobuf<MessageClass>())`
   - Protobuf message types now imported as `import type { ... }` for type-only usage
-  - **Result:** Full TypeScript type inference in tRPC routers without runtime validators
+  - **Result:** Full TypeScript type inference in tRPC routers with proper validator structure
+  - Fixes "Cannot use 'in' operator to search for '~standard' in undefined" runtime error
   - This was causing loss of type safety in React components using `useMutation()` and `useQuery()`
 
 #### Critical Runtime Fix
@@ -51,18 +53,19 @@ export const ResourceServiceRouter = (connectBaseUrl: string) => {
 
 **After** (static with full types):
 ```typescript
+import { t, protobuf } from "../routerFactory";
 import type { CreateResourceRequest, CreateResourceResponse, ... } from "../../connect/resource_example_pb.js";
 
 export const ResourceServiceRouter = (connectBaseUrl: string) => {
   const client = createClient(ResourceService, transport);
   return t.router({
     CreateResource: t.procedure
-      .input<CreateResourceRequest>()    // ✅ Type parameter
-      .output<CreateResourceResponse>()  // ✅ Type parameter
+      .input(protobuf<CreateResourceRequest>())    // ✅ Protobuf validator
+      .output(protobuf<CreateResourceResponse>())  // ✅ Protobuf validator
       .mutation(async ({ input }) => client.CreateResource(input)),
     GetResource: t.procedure
-      .input<GetResourceRequest>()       // ✅ Type parameter
-      .output<GetResourceResponse>()     // ✅ Type parameter
+      .input(protobuf<GetResourceRequest>())       // ✅ Protobuf validator
+      .output(protobuf<GetResourceResponse>())     // ✅ Protobuf validator
       .query(async ({ input }) => client.GetResource(input)),
     // ... each method explicitly typed
   });
@@ -70,6 +73,17 @@ export const ResourceServiceRouter = (connectBaseUrl: string) => {
 ```
 
 ### Added
+
+- **Protobuf passthrough validator** - `protobuf<T>()` function for type-safe tRPC procedures
+  - Provides validator structure that tRPC expects
+  - Maintains full TypeScript type inference
+  - No runtime validation overhead (delegates to Protobuf)
+  - Exported from `routerFactory.ts` for use in generated routers
+
+- **ES module package.json** - Automatically generated `package.json` with `"type": "module"`
+  - Eliminates Node.js MODULE_TYPELESS_PACKAGE_JSON warnings
+  - Properly marks generated code as ES modules
+  - Created in output directory during code generation
 
 - **Post-processing for protobuf declaration files**
   - Automatically adds `type` annotations to `proto3` imports in generated `*_pb.d.ts` files
@@ -81,14 +95,15 @@ export const ResourceServiceRouter = (connectBaseUrl: string) => {
 - Service router generation moved from helper function pattern to inline static generation
 - Each service method is now individually inspected and typed at codegen time
 - Query vs mutation determination happens at generation time (not runtime)
-- **Type parameters** used instead of runtime validators: `.input<Type>()` not `.input(Type)`
+- **Protobuf validator pattern**: `.input(protobuf<Type>())` provides validator object to tRPC
 - Message types imported as type-only: `import type { ... }` from `*_pb.js` files
 - No runtime validation at tRPC layer - Protobuf handles its own validation
-- Router factory simplified to export just `t` and verb configuration
-- Tests updated to verify static procedure generation and type parameter usage (38 tests passing)
+- Router factory exports both `t` (tRPC instance) and `protobuf` (validator helper)
+- Generated package.json marks output as ES modules to avoid Node.js warnings
+- Tests updated to verify static procedure generation and protobuf validator usage (38 tests passing)
 - Added 4 new tests for edge cases:
   - Verify message types imported from `*_pb.js` files
-  - Verify message types used as type parameters in `.input<>()` and `.output<>()`
+  - Verify message types used with `protobuf<>()` validator in `.input()` and `.output()`
   - Verify generated routers don't access `service.methods` at runtime
   - Verify multiple methods handled correctly
 

@@ -85,9 +85,9 @@ describe("emitServiceRouters - Message Type Imports", () => {
 		expect(contents).not.toContain(".I)");
 		expect(contents).not.toContain(".O)");
 
-		// Should use message type names as type parameters
-		expect(contents).toMatch(/\.input<\w+Request>\(\)/u);
-		expect(contents).toMatch(/\.output<\w+Response>\(\)/u);
+		// Should use message type names with protobuf validator
+		expect(contents).toMatch(/\.input\(protobuf<\w+Request>\(\)\)/u);
+		expect(contents).toMatch(/\.output\(protobuf<\w+Response>\(\)\)/u);
 	});
 
 	it("generates router that doesn't access service.methods at runtime", async () => {
@@ -164,9 +164,9 @@ describe("emitServiceRouters - Message Type Imports", () => {
 		expect(procedureMatches).toBeDefined();
 		expect(procedureMatches!.length).toBeGreaterThan(1);
 
-		// Each procedure should have .input<>() and .output<>()
-		const inputMatches = contents.match(/\.input</gu);
-		const outputMatches = contents.match(/\.output</gu);
+		// Each procedure should have .input(protobuf<>()) and .output(protobuf<>())
+		const inputMatches = contents.match(/\.input\(protobuf</gu);
+		const outputMatches = contents.match(/\.output\(protobuf</gu);
 		expect(inputMatches?.length).toBe(procedureMatches?.length);
 		expect(outputMatches?.length).toBe(procedureMatches?.length);
 	});
