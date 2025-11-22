@@ -24,7 +24,35 @@ build:
 # RELEASE TARGETS
 # ----------------------
 
-beta: check-clean build
+push-tag:
+
+# ----------------------
+# MANUAL PUBLISH
+# ----------------------
+publish: build
+	@# 1. Find the latest tag (e.g. v0.1.5-beta.7)
+	@TAG=$$(git tag --list "v*" | sort -V | tail -n1); \
+	if [ -z "$$TAG" ]; then echo "Error: No tags found."; exit 1; fi; \
+	VERSION=$${TAG#v}; \
+	echo "🚀 Preparing to publish version: $$VERSION"; \
+	\
+	# 2. Determine npm dist-tag (beta, rc, or latest) \
+	if [[ "$$VERSION" == *"beta"* ]]; then DIST_TAG="beta"; \
+	elif [[ "$$VERSION" == *"rc"* ]]; then DIST_TAG="rc"; \
+	else DIST_TAG="latest"; fi; \
+	echo "📦 NPM Tag: $$DIST_TAG"; \
+	\
+	# 3. Temporarily set package.json version \
+	npm version $$VERSION --no-git-tag-version --allow-same-version; \
+	\
+	# 4. Publish (Interactive: will ask for OTP if needed) \
+	npm publish --access public --tag $$DIST_TAG; \
+	\
+	# 5. Revert package.json to keep git clean \
+	git checkout package.json; \
+	echo "✅ Successfully published $$VERSION and reverted package.json"
+
+tag-beta: check-clean build
 	@# Find the latest tag specifically for the CURRENT version (e.g. v0.1.5-beta.*)
 	@LAST_BETA=$$(git tag --list "v$(CURRENT_VERSION)-beta.*" | sort -V | tail -n1); \
 	if [ -z "$$LAST_BETA" ]; then \
@@ -36,7 +64,7 @@ beta: check-clean build
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
-rc: check-clean build
+tag-rc: check-clean build
 	@# Find the latest tag specifically for the CURRENT version (e.g. v0.1.5-rc.*)
 	@LAST_RC=$$(git tag --list "v$(CURRENT_VERSION)-rc.*" | sort -V | tail -n1); \
 	if [ -z "$$LAST_RC" ]; then \
@@ -48,21 +76,21 @@ rc: check-clean build
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
-patch: check-clean build
+tag-patch: check-clean build
 	@NEW_VERSION=$(shell node -p "const v='$(CURRENT_VERSION)'.split('.'); v[2]++; v.join('.')"); \
 	NEW_TAG="v$$NEW_VERSION"; \
 	echo "Creating patch tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
-minor: check-clean build
+tag-minor: check-clean build
 	@NEW_VERSION=$(shell node -p "const v='$(CURRENT_VERSION)'.split('.'); v[1]++; v[2]=0; v.join('.')"); \
 	NEW_TAG="v$$NEW_VERSION"; \
 	echo "Creating minor tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
-major: check-clean build
+tag-major: check-clean build
 	@NEW_VERSION=$(shell node -p "const v='$(CURRENT_VERSION)'.split('.'); v[0]++; v[1]=0; v[2]=0; v.join('.')"); \
 	NEW_TAG="v$$NEW_VERSION"; \
 	echo "Creating major tag: $$NEW_TAG"; \
