@@ -7,7 +7,7 @@ on:
 
 permissions:
   contents: read
-  id-token: write     # REQUIRED for npm OIDC
+  id-token: write
   packages: write
 
 jobs:
@@ -23,6 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          # REQUIRED for Token Auth: This creates the .npmrc file that reads NODE_AUTH_TOKEN
+          registry-url: "https://registry.npmjs.org/"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -36,7 +38,7 @@ jobs:
       - name: Build package
         run: pnpm build
 
-      # 1. Parse the Git tag to determine the npm tag (beta vs latest)
+      # 1. Parse the Git tag to determine the npm tag
       - name: Determine npm dist-tag
         id: disttag
         run: |
@@ -51,17 +53,17 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
-      # 2. CRITICAL FIX: Update package.json version to match the git tag
-      #    (e.g., v0.1.5-beta.1 -> 0.1.5-beta.1)
+      # 2. Sync package.json version with Tag
       - name: Sync package.json version with Tag
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Setting package.json version to: $VERSION"
           npm version $VERSION --no-git-tag-version --allow-same-version
 
-      # 3. Publish using the synced version and the calculated dist-tag
-      - name: Publish to npm via OIDC
+      # 3. Publish using Token
+      - name: Publish to npm
         env:
+          # This now works because registry-url above configured .npmrc to look for it
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm publish --provenance --access public --tag ${{ steps.disttag.outputs.tag }}
