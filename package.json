@@ -1,6 +1,6 @@
 {
 	"name": "proto-to-trpc",
-	"version": "0.1.1",
+	"version": "0.1.2-beta.0",
 	"description": "Generate ConnectRPC TypeScript clients and fully-typed tRPC routers from .proto files using a simple CLI.",
 	"license": "MIT",
 	"type": "module",
@@ -15,7 +15,13 @@
 	"bin": {
 		"proto-to-trpc": "./dist/cli.mjs"
 	},
-	"files": ["dist", "README.md", "LICENSE", "CHANGELOG.md", "docs"],
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE",
+		"CHANGELOG.md",
+		"docs"
+	],
 	"scripts": {
 		"build": "tsup",
 		"lint": "biome lint .",
