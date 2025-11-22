@@ -87,6 +87,5 @@
 		"@trpc/client": {
 			"optional": false
 		}
-	},
-	"packageManager": "pnpm@10.22.0"
+	}
 }
