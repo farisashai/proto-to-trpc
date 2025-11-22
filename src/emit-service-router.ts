@@ -94,10 +94,13 @@ export async function emitServiceRouters(
 					messageTypes.add(inputTypeName);
 					messageTypes.add(outputTypeName);
 
+					// Connect-ES clients use camelCase method names
+					const clientMethodName = methodName.charAt(0).toLowerCase() + methodName.slice(1);
+
 					procedures.push(`\t\t${methodName}: t.procedure
 \t\t\t.input(protobuf<${inputTypeName}>())
 \t\t\t.output(protobuf<${outputTypeName}>())
-\t\t\t.${procedureType}(async ({ input }) => client.${methodName}(input))`);
+\t\t\t.${procedureType}(async ({ input }) => client.${clientMethodName}(input))`);
 				}
 
 				const messageTypeImports = Array.from(messageTypes).join(", ");
