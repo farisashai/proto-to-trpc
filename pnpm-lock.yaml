@@ -8,15 +8,24 @@ importers:
 
   .:
     dependencies:
+      '@bufbuild/protobuf':
+        specifier: ^1.10.0
+        version: 1.10.1
+      '@bufbuild/protoc-gen-es':
+        specifier: ^1.10.0
+        version: 1.10.1(@bufbuild/protobuf@1.10.1)
+      '@connectrpc/protoc-gen-connect-es':
+        specifier: ^1.7.0
+        version: 1.7.0(@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))
+      '@protobuf-ts/protoc':
+        specifier: ^2.9.4
+        version: 2.11.1
       chokidar:
         specifier: ^3.6.0
         version: 3.6.0
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.3
-      protoc:
-        specifier: ^25.2.0
-        version: 25.8.0
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
@@ -134,10 +143,36 @@ packages:
   '@bufbuild/protobuf@1.10.1':
     resolution: {integrity: sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ==}
 
+  '@bufbuild/protoc-gen-es@1.10.1':
+    resolution: {integrity: sha512-YADugbvibIdZSb0NGf5OF87IyKTuMvMFZ7vMHgm6pL1SCfDwJ/ZRianTdrPG9hq/gOipK+NwHmXBViyS3J7nxA==}
+    engines: {node: '>=14'}
+    hasBin: true
+    peerDependencies:
+      '@bufbuild/protobuf': 1.10.1
+    peerDependenciesMeta:
+      '@bufbuild/protobuf':
+        optional: true
+
+  '@bufbuild/protoplugin@1.10.1':
+    resolution: {integrity: sha512-LaSbfwabAFIvbVnbn8jWwElRoffCIxhVraO8arliVwWupWezHLXgqPHEYLXZY/SsAR+/YsFBQJa8tAGtNPJyaQ==}
+
   '@connectrpc/connect@1.7.0':
     resolution: {integrity: sha512-iNKdJRi69YP3mq6AePRT8F/HrxWCewrhxnLMNm0vpqXAR8biwzRtO6Hjx80C6UvtKJ5sFmffQT7I4Baecz389w==}
     peerDependencies:
       '@bufbuild/protobuf': ^1.10.0
+
+  '@connectrpc/protoc-gen-connect-es@1.7.0':
+    resolution: {integrity: sha512-g2rE799dxGgXtwSTBOJoSlzCy3HN0IX/Es8uKsCgXRmco8o277/bb5nz1X8TmvBooCBGNdtEdUDG50olcvS9jQ==}
+    engines: {node: '>=16.0.0'}
+    hasBin: true
+    peerDependencies:
+      '@bufbuild/protoc-gen-es': ^1.10.0
+      '@connectrpc/connect': 1.7.0
+    peerDependenciesMeta:
+      '@bufbuild/protoc-gen-es':
+        optional: true
+      '@connectrpc/connect':
+        optional: true
 
   '@esbuild/aix-ppc64@0.21.5':
     resolution: {integrity: sha512-1SDgH6ZSPTlggy1yI6+Dbkiz8xzpHJEVAlF/AM1tHPLsf5STom9rwtjE4hKAF20FfXXNTFqEYXyJNWh1GiZedQ==}
@@ -470,6 +505,10 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
+  '@protobuf-ts/protoc@2.11.1':
+    resolution: {integrity: sha512-mUZJaV0daGO6HUX90o/atzQ6A7bbN2RSuHtdwo8SSF2Qoe3zHwa4IHyCN1evftTeHfLmdz+45qo47sL+5P8nyg==}
+    hasBin: true
+
   '@rollup/rollup-android-arm-eabi@4.53.3':
     resolution: {integrity: sha512-mRSi+4cBjrRLoaal2PnqH82Wqyb+d3HsPUN/W+WslCXsZsyHa9ZeQQX/pQsZaVIWDkPcpV6jJ+3KLbTbgnwv8w==}
     cpu: [arm]
@@ -602,6 +641,11 @@ packages:
 
   '@types/yargs@17.0.35':
     resolution: {integrity: sha512-qUHkeCyQFxMXg79wQfTtfndEC+N9ZZg76HJftDJp+qH2tV7Gj4OJi7l+PiWwJ+pWtW8GwSmqsDj/oymhrTWXjg==}
+
+  '@typescript/vfs@1.6.2':
+    resolution: {integrity: sha512-hoBwJwcbKHmvd2QVebiytN1aELvpk9B74B4L1mFm/XT1Q/VOYAWl2vQ9AWRFtQq8zmz6enTpfTV8WRc4ATjW/g==}
+    peerDependencies:
+      typescript: '*'
 
   '@vitest/coverage-v8@2.1.9':
     resolution: {integrity: sha512-Z2cOr0ksM00MpEfyVE8KXIYPEcBFxdbLSs56L8PO0QQMxt/6bDj45uQfxoc96v05KW3clk7vvgP0qfDit9DmfQ==}
@@ -1008,11 +1052,6 @@ packages:
     resolution: {integrity: sha512-3Ybi1tAuwAP9s0r1UQ2J4n5Y0G05bJkpUIO0/bI9MhwmD70S5aTWbXGBwxHrelT+XM1k6dM0pk+SwNkpTRN7Pg==}
     engines: {node: ^10 || ^12 || >=14}
 
-  protoc@25.8.0:
-    resolution: {integrity: sha512-qY1NssKH6uo6UNxMR/kvq0VVSZhIUjX2zNO1b+XC20piqUyrsRhj2qLLPYCV500/ulxM8WvjOGq6G7TA5uUTag==}
-    engines: {node: '>=20.0.0'}
-    hasBin: true
-
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -1165,6 +1204,11 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  typescript@4.5.2:
+    resolution: {integrity: sha512-5BlMof9H1yGt0P8/WF+wPNw6GfctgGjXp5hkblpyT+8rkASSmkUKMXrxR0Xg8ThVCi/JnHQiKXeBaEwCeQwMFw==}
+    engines: {node: '>=4.2.0'}
+    hasBin: true
 
   typescript@5.9.3:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
@@ -1327,9 +1371,35 @@ snapshots:
 
   '@bufbuild/protobuf@1.10.1': {}
 
+  '@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1)':
+    dependencies:
+      '@bufbuild/protoplugin': 1.10.1
+    optionalDependencies:
+      '@bufbuild/protobuf': 1.10.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@bufbuild/protoplugin@1.10.1':
+    dependencies:
+      '@bufbuild/protobuf': 1.10.1
+      '@typescript/vfs': 1.6.2(typescript@4.5.2)
+      typescript: 4.5.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1)':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
+
+  '@connectrpc/protoc-gen-connect-es@1.7.0(@bufbuild/protoc-gen-es@1.10.1(@bufbuild/protobuf@1.10.1))(@connectrpc/connect@1.7.0(@bufbuild/protobuf@1.10.1))':
+    dependencies:
+      '@bufbuild/protobuf': 1.10.1
+      '@bufbuild/protoplugin': 1.10.1
+    optionalDependencies:
+      '@bufbuild/protoc-gen-es': 1.10.1(@bufbuild/protobuf@1.10.1)
+      '@connectrpc/connect': 1.7.0(@bufbuild/protobuf@1.10.1)
+    transitivePeerDependencies:
+      - supports-color
 
   '@esbuild/aix-ppc64@0.21.5':
     optional: true
@@ -1518,6 +1588,8 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
+  '@protobuf-ts/protoc@2.11.1': {}
+
   '@rollup/rollup-android-arm-eabi@4.53.3':
     optional: true
 
@@ -1604,6 +1676,13 @@ snapshots:
   '@types/yargs@17.0.35':
     dependencies:
       '@types/yargs-parser': 21.0.3
+
+  '@typescript/vfs@1.6.2(typescript@4.5.2)':
+    dependencies:
+      debug: 4.4.3
+      typescript: 4.5.2
+    transitivePeerDependencies:
+      - supports-color
 
   '@vitest/coverage-v8@2.1.9(vitest@2.1.9(@types/node@22.19.1))':
     dependencies:
@@ -2027,8 +2106,6 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  protoc@25.8.0: {}
-
   queue-microtask@1.2.3: {}
 
   readdirp@3.6.0:
@@ -2193,6 +2270,8 @@ snapshots:
       - supports-color
       - tsx
       - yaml
+
+  typescript@4.5.2: {}
 
   typescript@5.9.3: {}
 
