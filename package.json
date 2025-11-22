@@ -1,6 +1,6 @@
 {
 	"name": "proto-to-trpc",
-	"version": "0.1.6",
+	"version": "0.2.0",
 	"description": "Generate ConnectRPC TypeScript clients and fully-typed tRPC routers from .proto files using a simple CLI.",
 	"license": "MIT",
 	"type": "module",
