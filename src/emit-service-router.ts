@@ -73,24 +73,40 @@ export async function emitServiceRouters(
 				const relPath = path.relative(routerDir, file).replace(/\\/g, "/");
 				const connectImport = trimExtension(relPath);
 
-				// Generate static procedure definitions
+				// Find the corresponding _pb file for message type imports
+				const pbFile = file.replace(/_connect\.(js|ts|mjs|cjs)$/u, "_pb.$1");
+				const pbRelPath = path.relative(routerDir, pbFile).replace(/\\/g, "/");
+				const pbImport = trimExtension(pbRelPath);
+
+				// Generate static procedure definitions and collect message types
 				const procedures: string[] = [];
+				const messageTypes = new Set<string>();
 				const methods = Object.values(svc.methods) as any[];
 
 				for (const method of methods) {
 					const methodName = method.name;
 					const procedureType = isQuery(methodName, queryVerbs, mutationVerbs) ? "query" : "mutation";
 
+					// Get message type names from the method
+					const inputTypeName = method.I?.typeName?.split('.').pop() || `${methodName}Request`;
+					const outputTypeName = method.O?.typeName?.split('.').pop() || `${methodName}Response`;
+
+					messageTypes.add(inputTypeName);
+					messageTypes.add(outputTypeName);
+
 					procedures.push(`\t\t${methodName}: t.procedure
-\t\t\t.input(${serviceName}.methods.${methodName}.I)
-\t\t\t.output(${serviceName}.methods.${methodName}.O)
+\t\t\t.input(${inputTypeName})
+\t\t\t.output(${outputTypeName})
 \t\t\t.${procedureType}(async ({ input }) => client.${methodName}(input))`);
 				}
+
+				const messageTypeImports = Array.from(messageTypes).join(", ");
 
 				const code = `import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { t } from "../routerFactory";
 import { ${serviceName} } from "${connectImport}.js";
+import { ${messageTypeImports} } from "${pbImport}.js";
 
 export const ${serviceName}Router = (connectBaseUrl: string) => {
 	const transport = createConnectTransport({ baseUrl: connectBaseUrl });

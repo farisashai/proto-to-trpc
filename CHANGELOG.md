@@ -42,16 +42,18 @@ export const ResourceServiceRouter = (connectBaseUrl: string) => {
 
 **After** (static with full types):
 ```typescript
+import { CreateResourceRequest, CreateResourceResponse, ... } from "../../connect/resource_example_pb.js";
+
 export const ResourceServiceRouter = (connectBaseUrl: string) => {
   const client = createClient(ResourceService, transport);
   return t.router({
     CreateResource: t.procedure
-      .input(ResourceService.methods.CreateResource.I)
-      .output(ResourceService.methods.CreateResource.O)
+      .input(CreateResourceRequest)
+      .output(CreateResourceResponse)
       .mutation(async ({ input }) => client.CreateResource(input)),
     GetResource: t.procedure
-      .input(ResourceService.methods.GetResource.I)
-      .output(ResourceService.methods.GetResource.O)
+      .input(GetResourceRequest)
+      .output(GetResourceResponse)
       .query(async ({ input }) => client.GetResource(input)),
     // ... each method explicitly typed
   });
@@ -70,8 +72,14 @@ export const ResourceServiceRouter = (connectBaseUrl: string) => {
 - Service router generation moved from helper function pattern to inline static generation
 - Each service method is now individually inspected and typed at codegen time
 - Query vs mutation determination happens at generation time (not runtime)
+- Message types imported directly from `*_pb.js` files instead of accessing through service definition
 - Router factory simplified to export just `t` and verb configuration
-- Tests updated to verify static procedure generation (34 tests passing)
+- Tests updated to verify static procedure generation and message type imports (38 tests passing)
+- Added 4 new tests for edge cases:
+  - Verify message types imported from `*_pb.js` files
+  - Verify message types used directly in `.input()` and `.output()`
+  - Verify generated routers don't access `service.methods` at runtime
+  - Verify multiple methods handled correctly
 
 ### Breaking Changes
 
