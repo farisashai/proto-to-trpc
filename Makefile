@@ -24,34 +24,46 @@ build:
 # RELEASE TARGETS
 # ----------------------
 
-push-tag:
 
 # ----------------------
-# MANUAL PUBLISH
+# MANUAL PUBLISH (Universal)
 # ----------------------
-publish: build
-	@# 1. Find the latest tag (e.g. v0.1.5-beta.7)
+publish: check-clean build
+	@# 1. Find the latest tag
 	@TAG=$$(git tag --list "v*" | sort -V | tail -n1); \
-	if [ -z "$$TAG" ]; then echo "Error: No tags found."; exit 1; fi; \
+	if [ -z "$$TAG" ]; then \
+	  echo "❌ Error: No Git tags found."; \
+	  exit 1; \
+	fi; \
 	VERSION=$${TAG#v}; \
-	echo "🚀 Preparing to publish version: $$VERSION"; \
 	\
-	# 2. Determine npm dist-tag (beta, rc, or latest) \
-	if [[ "$$VERSION" == *"beta"* ]]; then DIST_TAG="beta"; \
-	elif [[ "$$VERSION" == *"rc"* ]]; then DIST_TAG="rc"; \
-	else DIST_TAG="latest"; fi; \
-	echo "📦 NPM Tag: $$DIST_TAG"; \
+	# 2. Determine npm dist-tag based on version string \
+	if [[ "$$VERSION" == *"beta"* ]]; then \
+	  DIST_TAG="beta"; \
+	elif [[ "$$VERSION" == *"rc"* ]]; then \
+	  DIST_TAG="rc"; \
+	else \
+	  DIST_TAG="latest"; \
+	fi; \
 	\
-	# 3. Temporarily set package.json version \
-	npm version $$VERSION --no-git-tag-version --allow-same-version; \
+	echo "🚀 Detected Git Tag: $$TAG"; \
+	echo "📦 Publishing Version: $$VERSION as @$$DIST_TAG"; \
 	\
-	# 4. Publish (Interactive: will ask for OTP if needed) \
-	npm publish --access public --tag $$DIST_TAG; \
+	# 3. Temporarily sync package.json \
+	npm version $$VERSION --no-git-tag-version --allow-same-version > /dev/null; \
 	\
-	# 5. Revert package.json to keep git clean \
+	# 4. Publish (with error handling to ensure revert) \
+	if npm publish --access public --tag $$DIST_TAG; then \
+	  echo "✅ Publish successful."; \
+	else \
+	  echo "❌ Publish failed."; \
+	  git checkout package.json; \
+	  exit 1; \
+	fi; \
+	\
+	# 5. Revert package.json \
 	git checkout package.json; \
-	echo "✅ Successfully published $$VERSION and reverted package.json"
-
+	echo "🔄 Reverted package.json to clean state."
 tag-beta: check-clean build
 	@# Find the latest tag specifically for the CURRENT version (e.g. v0.1.5-beta.*)
 	@LAST_BETA=$$(git tag --list "v$(CURRENT_VERSION)-beta.*" | sort -V | tail -n1); \
