@@ -34,11 +34,6 @@ export async function emitServiceRouters(
 		const moduleUrl = pathToFileURL(file).href;
 		const moduleExports: Record<string, unknown> = await import(moduleUrl);
 
-		const relPath = path.relative(trpcDir, file).replace(/\\/g, "/");
-		const baseImport = trimExtension(relPath);
-		const connectImport = baseImport;
-		const connectWebImport = baseImport.replace("_connect", "_connectweb");
-
 		for (const key of Object.keys(moduleExports)) {
 			const svc = moduleExports[key];
 			if (
@@ -55,15 +50,21 @@ export async function emitServiceRouters(
 					`${serviceName}Router.ts`,
 				);
 
-				const code = `import { createServiceRouter } from "../routerFactory";
-import { ${serviceName} } from "${connectImport}";
-import { create${serviceBaseName}Client } from "${connectWebImport}";
+				// Calculate relative path from the router file location to the connect file
+				const routerDir = path.dirname(routerFile);
+				const relPath = path.relative(routerDir, file).replace(/\\/g, "/");
+				const connectImport = trimExtension(relPath);
 
-export const ${serviceName}Router = (connectBaseUrl: string) =>
-  createServiceRouter(
-    ${serviceName},
-    create${serviceBaseName}Client({ baseUrl: connectBaseUrl })
-  );
+				const code = `import { createClient } from "@connectrpc/connect";
+import { createConnectTransport } from "@connectrpc/connect-web";
+import { createServiceRouter } from "../routerFactory";
+import { ${serviceName} } from "${connectImport}.js";
+
+export const ${serviceName}Router = (connectBaseUrl: string) => {
+	const transport = createConnectTransport({ baseUrl: connectBaseUrl });
+	const client = createClient(${serviceName}, transport);
+	return createServiceRouter(${serviceName}, client);
+};
 `;
 
 				await writeFile(routerFile, code);

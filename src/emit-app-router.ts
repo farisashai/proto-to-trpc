@@ -16,7 +16,7 @@ export async function emitAppRouter(
 	const fields = services
 		.map((service) => {
 			const stem = service.name.replace(/Service$/u, "");
-			return `    ${stem}: ${service.name}Router(connectBaseUrl)`;
+			return `\t\t${stem}: ${service.name}Router(connectBaseUrl)`;
 		})
 		.join(",\n");
 
@@ -24,9 +24,9 @@ export async function emitAppRouter(
 ${imports}
 
 export function createAppRouter(connectBaseUrl: string) {
-  return t.router({
+	return t.router({
 ${fields}
-  });
+	});
 }
 
 export type AppRouter = ReturnType<typeof createAppRouter>;

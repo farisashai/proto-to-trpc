@@ -14,6 +14,13 @@
 		"enabled": true
 	},
 	"files": {
-		"ignore": ["dist/**", "node_modules/**"]
+		"ignore": [
+			"dist/**",
+			"node_modules/**",
+			"**/connect/*_pb.d.ts",
+			"**/connect/*_pb.js",
+			"**/connect/*_connect.d.ts",
+			"**/connect/*_connect.js"
+		]
 	}
 }

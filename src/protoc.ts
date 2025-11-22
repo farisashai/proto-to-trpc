@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { promisify } from "node:util";
 
@@ -28,9 +29,15 @@ export async function runProtoc(options: ProtocOptions): Promise<void> {
 	// which will be resolved from node_modules/.bin via PATH below
 	const binary = protocPath ?? process.env.PROTOC ?? "protoc";
 
-	// Ensure protoc can find plugins from this package's node_modules/.bin
-	const binDir = path.resolve(process.cwd(), "node_modules", ".bin");
-	const envPath = [binDir, process.env.PATH]
+	// Find plugin directories:
+	// 1. This package's node_modules/.bin (for global installs or pnpm dlx)
+	// 2. User's project node_modules/.bin (for local installs)
+	const __dirname = path.dirname(fileURLToPath(import.meta.url));
+	const packageBinDir = path.resolve(__dirname, "../node_modules/.bin");
+	const projectBinDir = path.resolve(process.cwd(), "node_modules", ".bin");
+
+	// Include both directories in PATH, with package bin taking precedence
+	const envPath = [packageBinDir, projectBinDir, process.env.PATH]
 		.filter(Boolean)
 		.join(path.delimiter);
 
@@ -52,9 +59,7 @@ export async function runProtoc(options: ProtocOptions): Promise<void> {
 	} catch (error) {
 		const message =
 			error instanceof Error && "stderr" in error
-				? String(
-						(error as Error & { stderr?: string }).stderr || error.message,
-					)
+				? String((error as Error & { stderr?: string }).stderr || error.message)
 				: "Failed to execute protoc. Is it installed and on your PATH?";
 		throw new Error(message);
 	}

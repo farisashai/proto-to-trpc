@@ -13,7 +13,7 @@ describe("Error Handling", () => {
 		it("returns empty array for non-existent directory", async () => {
 			const nonExistentDir = path.join(
 				os.tmpdir(),
-				"proto-to-trpc-nonexistent-" + Date.now(),
+				`proto-to-trpc-nonexistent-${Date.now()}`,
 			);
 
 			const files = await discoverProtoFiles(nonExistentDir);
@@ -97,9 +97,9 @@ message Test {
 		it("throws error when proto directory does not exist", async () => {
 			const nonExistentDir = path.join(
 				os.tmpdir(),
-				"proto-to-trpc-nonexistent-" + Date.now(),
+				`proto-to-trpc-nonexistent-${Date.now()}`,
 			);
-			const outDir = path.join(os.tmpdir(), "proto-to-trpc-out-" + Date.now());
+			const outDir = path.join(os.tmpdir(), `proto-to-trpc-out-${Date.now()}`);
 
 			await expect(
 				runCodegen({

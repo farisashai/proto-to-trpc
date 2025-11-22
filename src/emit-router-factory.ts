@@ -27,7 +27,7 @@ export async function emitRouterFactory(
 	);
 
 	const code = `import { initTRPC } from "@trpc/server";
-import type { AnyService, MethodInfoUnary } from "@connectrpc/connect";
+import type { AnyService, MethodInfoUnary, Client } from "@connectrpc/connect";
 
 export const t = initTRPC.create();
 
@@ -35,32 +35,38 @@ const QUERY_PREFIXES = ${queryVerbs} as const;
 const MUTATION_PREFIXES = ${mutationVerbs} as const;
 
 function isQuery(name: string): boolean {
-  if (QUERY_PREFIXES.some((prefix) => name.startsWith(prefix))) return true;
-  if (MUTATION_PREFIXES.some((prefix) => name.startsWith(prefix))) return false;
-  return false;
+	if (QUERY_PREFIXES.some((prefix) => name.startsWith(prefix))) return true;
+	if (MUTATION_PREFIXES.some((prefix) => name.startsWith(prefix))) return false;
+	return false;
 }
 
-export function createServiceRouter(service: AnyService, client: any) {
-  const procedures: Record<string, any> = {};
+export function createServiceRouter<T extends AnyService>(
+	service: T,
+	client: Client<T>,
+) {
+	const procedures: Record<
+		string,
+		ReturnType<typeof t.procedure.input>
+	> = {};
 
-  for (const method of service.methods as readonly MethodInfoUnary[]) {
-    const name = method.name;
-    const fn = client[name].bind(client);
+	for (const method of service.methods as readonly MethodInfoUnary[]) {
+		const name = method.name;
+		const fn = (client[name as keyof Client<T>] as CallableFunction).bind(client);
 
-    if (isQuery(name)) {
-      procedures[name] = t.procedure
-        .input(method.I)
-        .output(method.O)
-        .query(async ({ input }) => fn(input));
-    } else {
-      procedures[name] = t.procedure
-        .input(method.I)
-        .output(method.O)
-        .mutation(async ({ input }) => fn(input));
-    }
-  }
+		if (isQuery(name)) {
+			procedures[name] = t.procedure
+				.input(method.I)
+				.output(method.O)
+				.query(async ({ input }) => fn(input));
+		} else {
+			procedures[name] = t.procedure
+				.input(method.I)
+				.output(method.O)
+				.mutation(async ({ input }) => fn(input));
+		}
+	}
 
-  return t.router(procedures);
+	return t.router(procedures);
 }
 `;
 
