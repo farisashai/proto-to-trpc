@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package backend.v1;
+
+import "backend/v1/types.proto";
+
+service EventService {
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse) {}
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse) {}
+}

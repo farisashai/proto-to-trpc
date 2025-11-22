@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -41,10 +42,22 @@ export async function runProtoc(options: ProtocOptions): Promise<void> {
 		.filter(Boolean)
 		.join(path.delimiter);
 
+	// Automatically include common third-party proto paths
+	// 1. From node_modules (if packages are installed)
+	// 2. From bundled deps directory in this package
+	const bundledDeps = path.resolve(__dirname, "../deps");
+
+	const thirdPartyProtoPaths = [
+		path.join(process.cwd(), "node_modules", "google-proto-files"), // google/protobuf/*, google/api/*
+		path.join(process.cwd(), "node_modules", "@bufbuild", "protovalidate"), // buf/validate/*
+		bundledDeps, // protoc-gen-openapiv2/options/*, google/* (bundled with this package)
+	].filter(existsSync);
+
 	const args = [
 		`--connect-es_out=${resolvedOutDir}`,
 		`--es_out=${resolvedOutDir}`,
 		`--proto_path=${resolvedProtoDir}`,
+		...thirdPartyProtoPaths.map((p) => `--proto_path=${p}`),
 		"--experimental_allow_proto3_optional",
 		...protoFiles,
 	];

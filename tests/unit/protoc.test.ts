@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 describe("runProtoc", () => {
 	it("generates Connect and TS outputs from proto files", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const resourceProto = path.join(fixturesProtoDir, "resource_example.proto");
 
 		const tmpDir = await fs.mkdtemp(

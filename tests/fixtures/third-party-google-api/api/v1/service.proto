@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package api.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+message Resource {
+  string id = 1;
+  string name = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
+
+message GetResourceRequest {
+  string id = 1;
+}
+
+message GetResourceResponse {
+  Resource resource = 1;
+}
+
+message ListResourcesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+}
+
+message ListResourcesResponse {
+  repeated Resource resources = 1;
+  string next_page_token = 2;
+}
+
+service ResourceService {
+  rpc GetResource(GetResourceRequest) returns (GetResourceResponse) {
+    option (google.api.http) = {
+      get: "/v1/resources/{id}"
+    };
+  }
+
+  rpc ListResources(ListResourcesRequest) returns (ListResourcesResponse) {
+    option (google.api.http) = {
+      get: "/v1/resources"
+    };
+  }
+}

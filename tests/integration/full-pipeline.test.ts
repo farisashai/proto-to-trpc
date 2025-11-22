@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 describe("Full Pipeline Integration", () => {
 	it("generates complete working tRPC router from proto files", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const tmpDir = await fs.mkdtemp(
 			path.join(os.tmpdir(), "proto-to-trpc-full-"),
 		);
@@ -123,7 +123,7 @@ describe("Full Pipeline Integration", () => {
 	});
 
 	it("generates router with custom query and mutation verbs", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const tmpDir = await fs.mkdtemp(
 			path.join(os.tmpdir(), "proto-to-trpc-custom-verbs-"),
 		);

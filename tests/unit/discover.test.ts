@@ -12,18 +12,18 @@ const __dirname = path.dirname(__filename);
 
 describe("discoverProtoFiles", () => {
 	it("finds .proto files recursively", async () => {
-		const fixturesDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesDir = path.join(__dirname, "../fixtures/simple");
 		const files = await discoverProtoFiles(fixturesDir);
 
 		const hasExample = files.some((file) =>
-			file.endsWith(path.join("fixtures", "proto", "resource_example.proto")),
+			file.endsWith(path.join("fixtures", "simple", "resource_example.proto")),
 		);
 
 		expect(hasExample).toBe(true);
 	});
 
 	it("returns absolute paths", async () => {
-		const fixturesDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesDir = path.join(__dirname, "../fixtures/simple");
 		const files = await discoverProtoFiles(fixturesDir);
 
 		expect(files.length).toBeGreaterThan(0);

@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package combined.v1;
+
+// This fixture combines multiple third-party imports to test they all work together
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/any.proto";
+import "google/api/annotations.proto";
+import "buf/validate/validate.proto";
+
+message ComplexEntity {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  string name = 2 [(buf.validate.field).string = {min_len: 1, max_len: 200}];
+  string email = 3 [(buf.validate.field).string.email = true];
+  google.protobuf.Timestamp created_at = 4;
+  google.protobuf.Timestamp updated_at = 5;
+  google.protobuf.Duration processing_time = 6;
+  google.protobuf.Struct metadata = 7;
+  google.protobuf.Any payload = 8;
+}
+
+message CreateComplexEntityRequest {
+  string name = 1 [(buf.validate.field).string = {min_len: 1, max_len: 200}];
+  string email = 2 [(buf.validate.field).string.email = true];
+  google.protobuf.Struct metadata = 3;
+}
+
+message CreateComplexEntityResponse {
+  ComplexEntity entity = 1;
+}
+
+message GetComplexEntityRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetComplexEntityResponse {
+  ComplexEntity entity = 1;
+}
+
+message ListComplexEntitiesRequest {
+  int32 page = 1 [(buf.validate.field).int32.gte = 0];
+  int32 page_size = 2 [(buf.validate.field).int32 = {gte: 1, lte: 100}];
+}
+
+message ListComplexEntitiesResponse {
+  repeated ComplexEntity entities = 1;
+  int32 total = 2;
+  string next_page_token = 3;
+}
+
+service ComplexEntityService {
+  rpc CreateComplexEntity(CreateComplexEntityRequest) returns (CreateComplexEntityResponse) {
+    option (google.api.http) = {
+      post: "/v1/entities"
+      body: "*"
+    };
+  }
+
+  rpc GetComplexEntity(GetComplexEntityRequest) returns (GetComplexEntityResponse) {
+    option (google.api.http) = {
+      get: "/v1/entities/{id}"
+    };
+  }
+
+  rpc ListComplexEntities(ListComplexEntitiesRequest) returns (ListComplexEntitiesResponse) {
+    option (google.api.http) = {
+      get: "/v1/entities"
+    };
+  }
+}

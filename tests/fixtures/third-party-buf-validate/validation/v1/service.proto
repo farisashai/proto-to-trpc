@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package validation.v1;
+
+import "buf/validate/validate.proto";
+import "google/protobuf/timestamp.proto";
+
+message User {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  string email = 2 [(buf.validate.field).string.email = true];
+  string name = 3 [(buf.validate.field).string.min_len = 1];
+  int32 age = 4 [(buf.validate.field).int32.gte = 0];
+}
+
+message CreateUserRequest {
+  string email = 1 [(buf.validate.field).string.email = true];
+  string name = 2 [(buf.validate.field).string = {min_len: 1, max_len: 100}];
+  int32 age = 3 [(buf.validate.field).int32 = {gte: 0, lte: 150}];
+}
+
+message CreateUserResponse {
+  User user = 1;
+}
+
+message GetUserRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetUserResponse {
+  User user = 1;
+}
+
+service UserValidationService {
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}
+  rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
+}

@@ -20,7 +20,8 @@
 			"**/connect/*_pb.d.ts",
 			"**/connect/*_pb.js",
 			"**/connect/*_connect.d.ts",
-			"**/connect/*_connect.js"
+			"**/connect/*_connect.js",
+			"tests/fixtures/**/output/**"
 		]
 	}
 }

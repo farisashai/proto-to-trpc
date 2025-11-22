@@ -9,6 +9,6 @@ coverage
 
 # Generated test files (temp directories are cleaned up but just in case)
 tests/**/*.generated.*
-fixtures/generated
+tests/fixtures/**/output/
 
 

@@ -23,7 +23,7 @@ describe.skip("codegen pipeline (with protoc)", () => {
 		const tmpDir = await fs.mkdtemp(
 			path.join(os.tmpdir(), "proto-to-trpc-integration-"),
 		);
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const resourceProto = path.join(fixturesProtoDir, "resource_example.proto");
 		const connectDir = path.join(tmpDir, "connect");
 		const trpcDir = path.join(tmpDir, "trpc");

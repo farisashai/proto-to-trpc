@@ -12,7 +12,7 @@ const __dirname = path.dirname(__filename);
 
 describe("runCodegen", () => {
 	it("orchestrates full codegen pipeline", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const tmpDir = await fs.mkdtemp(
 			path.join(os.tmpdir(), "proto-to-trpc-run-"),
 		);
@@ -91,7 +91,7 @@ describe("runCodegen", () => {
 	});
 
 	it("accepts custom query and mutation verbs", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const tmpDir = await fs.mkdtemp(
 			path.join(os.tmpdir(), "proto-to-trpc-run-verbs-"),
 		);

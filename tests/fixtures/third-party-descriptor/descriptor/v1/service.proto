@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package descriptor.v1;
+
+import "google/protobuf/descriptor.proto";
+import "google/protobuf/timestamp.proto";
+
+// Example service that works with proto descriptors
+message Schema {
+  string id = 1;
+  string name = 2;
+  google.protobuf.FileDescriptorSet descriptor_set = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message GetSchemaRequest {
+  string id = 1;
+}
+
+message GetSchemaResponse {
+  Schema schema = 1;
+}
+
+message ListSchemasRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message ListSchemasResponse {
+  repeated Schema schemas = 1;
+  int32 total = 2;
+}
+
+service SchemaService {
+  rpc GetSchema(GetSchemaRequest) returns (GetSchemaResponse) {}
+  rpc ListSchemas(ListSchemasRequest) returns (ListSchemasResponse) {}
+}

@@ -20,7 +20,11 @@ export interface EmitServiceRoutersOptions {
 const DEFAULT_QUERY_VERBS = ["Get", "List"];
 const DEFAULT_MUTATION_VERBS = ["Create", "Update", "Delete"];
 
-function isQuery(name: string, queryVerbs: string[], mutationVerbs: string[]): boolean {
+function isQuery(
+	name: string,
+	queryVerbs: string[],
+	mutationVerbs: string[],
+): boolean {
 	if (queryVerbs.some((prefix) => name.startsWith(prefix))) return true;
 	if (mutationVerbs.some((prefix) => name.startsWith(prefix))) return false;
 	return false;
@@ -41,18 +45,21 @@ export async function emitServiceRouters(
 
 	const services: ServiceInfo[] = [];
 
-	const queryVerbs = options.queryVerbs && options.queryVerbs.length > 0
-		? options.queryVerbs
-		: DEFAULT_QUERY_VERBS;
-	const mutationVerbs = options.mutationVerbs && options.mutationVerbs.length > 0
-		? options.mutationVerbs
-		: DEFAULT_MUTATION_VERBS;
+	const queryVerbs =
+		options.queryVerbs && options.queryVerbs.length > 0
+			? options.queryVerbs
+			: DEFAULT_QUERY_VERBS;
+	const mutationVerbs =
+		options.mutationVerbs && options.mutationVerbs.length > 0
+			? options.mutationVerbs
+			: DEFAULT_MUTATION_VERBS;
 
 	for (const file of connectFiles) {
 		const moduleUrl = pathToFileURL(file).href;
 		const moduleExports: Record<string, unknown> = await import(moduleUrl);
 
 		for (const key of Object.keys(moduleExports)) {
+			// biome-ignore lint/suspicious/noExplicitAny: Dynamic introspection of Connect service definitions
 			const svc = moduleExports[key] as any;
 			if (
 				svc &&
@@ -81,21 +88,27 @@ export async function emitServiceRouters(
 				// Generate static procedure definitions and collect message types
 				const procedures: string[] = [];
 				const messageTypes = new Set<string>();
+				// biome-ignore lint/suspicious/noExplicitAny: Dynamic introspection of Connect service method definitions
 				const methods = Object.values(svc.methods) as any[];
 
 				for (const method of methods) {
 					const methodName = method.name;
-					const procedureType = isQuery(methodName, queryVerbs, mutationVerbs) ? "query" : "mutation";
+					const procedureType = isQuery(methodName, queryVerbs, mutationVerbs)
+						? "query"
+						: "mutation";
 
 					// Get message type names from the method
-					const inputTypeName = method.I?.typeName?.split('.').pop() || `${methodName}Request`;
-					const outputTypeName = method.O?.typeName?.split('.').pop() || `${methodName}Response`;
+					const inputTypeName =
+						method.I?.typeName?.split(".").pop() || `${methodName}Request`;
+					const outputTypeName =
+						method.O?.typeName?.split(".").pop() || `${methodName}Response`;
 
 					messageTypes.add(inputTypeName);
 					messageTypes.add(outputTypeName);
 
 					// Connect-ES clients use camelCase method names
-					const clientMethodName = methodName.charAt(0).toLowerCase() + methodName.slice(1);
+					const clientMethodName =
+						methodName.charAt(0).toLowerCase() + methodName.slice(1);
 
 					procedures.push(`\t\t${methodName}: t.procedure
 \t\t\t.input(protobuf<${inputTypeName}>())

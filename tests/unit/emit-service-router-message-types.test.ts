@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 describe("emitServiceRouters - Message Type Imports", () => {
 	it("imports message types from *_pb.js files", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const resourceProto = path.join(fixturesProtoDir, "resource_example.proto");
 
 		const tmpDir = await fs.mkdtemp(
@@ -52,7 +52,7 @@ describe("emitServiceRouters - Message Type Imports", () => {
 	});
 
 	it("uses message types directly in .input() and .output()", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const resourceProto = path.join(fixturesProtoDir, "resource_example.proto");
 
 		const tmpDir = await fs.mkdtemp(
@@ -91,7 +91,7 @@ describe("emitServiceRouters - Message Type Imports", () => {
 	});
 
 	it("generates router that doesn't access service.methods at runtime", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const resourceProto = path.join(fixturesProtoDir, "resource_example.proto");
 
 		const tmpDir = await fs.mkdtemp(
@@ -131,7 +131,7 @@ describe("emitServiceRouters - Message Type Imports", () => {
 	});
 
 	it("handles services with multiple methods correctly", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const resourceProto = path.join(fixturesProtoDir, "resource_example.proto");
 
 		const tmpDir = await fs.mkdtemp(
@@ -162,7 +162,7 @@ describe("emitServiceRouters - Message Type Imports", () => {
 		// Should have multiple procedure definitions
 		const procedureMatches = contents.match(/t\.procedure/gu);
 		expect(procedureMatches).toBeDefined();
-		expect(procedureMatches!.length).toBeGreaterThan(1);
+		expect(procedureMatches?.length).toBeGreaterThan(1);
 
 		// Each procedure should have .input(protobuf<>()) and .output(protobuf<>())
 		const inputMatches = contents.match(/\.input\(protobuf</gu);

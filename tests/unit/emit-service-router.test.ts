@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 describe("emitServiceRouters", () => {
 	it("emits a router file per discovered service", async () => {
-		const fixturesProtoDir = path.join(__dirname, "../../fixtures/proto");
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
 		const resourceProto = path.join(fixturesProtoDir, "resource_example.proto");
 
 		const tmpDir = await fs.mkdtemp(
