@@ -75,21 +75,30 @@ endef
 
 # BETA RELEASE
 beta: check-clean check-branch build
-	@if [ -z "$(LATEST_TAG)" ]; then \
-	  NEW_TAG="v$(CURRENT_VERSION)-beta.0"; \
-	else \
+	@if echo "$(LATEST_TAG)" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+'; then \
 	  NEW_TAG=v$(call bump_prerelease,$(LATEST_TAG),beta); \
+	else \
+	  NEW_TAG=v$(CURRENT_VERSION)-beta.0; \
+	fi; \
+	echo "Creating beta tag: $$NEW_TAG"; \
+	git tag $$NEW_TAG; \
+	git push origin $$NEW_TAGbeta: check-clean check-branch build
+	@if echo "$(LATEST_TAG)" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+'; then \
+	  NEW_TAG=v$(call bump_prerelease,$(LATEST_TAG),beta); \
+	else \
+	  NEW_TAG=v$(CURRENT_VERSION)-beta.0; \
 	fi; \
 	echo "Creating beta tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
+
 # RC RELEASE
 rc: check-clean check-branch build
-	@if [ -z "$(LATEST_TAG)" ]; then \
-	  NEW_TAG="v$(CURRENT_VERSION)-rc.0"; \
-	else \
+	@if echo "$(LATEST_TAG)" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+'; then \
 	  NEW_TAG=v$(call bump_prerelease,$(LATEST_TAG),rc); \
+	else \
+	  NEW_TAG=v$(CURRENT_VERSION)-rc.0; \
 	fi; \
 	echo "Creating rc tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
