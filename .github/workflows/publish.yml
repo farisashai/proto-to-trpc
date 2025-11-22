@@ -24,7 +24,6 @@ jobs:
         with:
           node-version: 22
           registry-url: "https://registry.npmjs.org/"
-          scope: ""     # optional
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -38,19 +37,32 @@ jobs:
       - name: Build package
         run: pnpm build
 
-      # Determine dist-tag (beta/rc/latest)
+      # 1. Parse the Git tag to determine the npm tag (beta vs latest)
       - name: Determine npm dist-tag
         id: disttag
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
-          if [[ "$TAG" == *"beta"* ]]; then
+          echo "Detected git tag: $TAG"
+          
+          if [[ "$TAG" == *"-beta"* ]]; then
             echo "tag=beta" >> $GITHUB_OUTPUT
-          elif [[ "$TAG" == *"rc"* ]]; then
+          elif [[ "$TAG" == *"-rc"* ]]; then
             echo "tag=rc" >> $GITHUB_OUTPUT
           else
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
+      # 2. CRITICAL FIX: Update package.json version to match the git tag
+      #    (e.g., v0.1.5-beta.1 -> 0.1.5-beta.1)
+      - name: Sync package.json version with Tag
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Setting package.json version to: $VERSION"
+          npm version $VERSION --no-git-tag-version --allow-same-version
+
+      # 3. Publish using the synced version and the calculated dist-tag
       - name: Publish to npm via OIDC
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm publish --provenance --access public --tag ${{ steps.disttag.outputs.tag }}
