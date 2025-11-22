@@ -21,6 +21,19 @@ build:
 	pnpm build
 
 # ----------------------
+# HELP
+# ----------------------
+
+help:
+	@echo "Available targets:"
+	@echo "  make beta        - Create a new beta tag (v$(CURRENT_VERSION)-beta.*)"
+	@echo "  make rc          - Create a new rc tag (v$(CURRENT_VERSION)-rc.*)"
+	@echo "  make patch       - Create a new patch tag"
+	@echo "  make minor       - Create a new minor tag"
+	@echo "  make major       - Create a new major tag"
+	@echo "  make help        - Show this help message"
+
+# ----------------------
 # RELEASE TARGETS
 # ----------------------
 
