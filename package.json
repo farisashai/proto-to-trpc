@@ -1,0 +1,79 @@
+{
+	"name": "proto-to-trpc",
+	"version": "0.1.0",
+	"description": "Generate ConnectRPC TypeScript clients and fully-typed tRPC routers from .proto files using a simple CLI.",
+	"license": "MIT",
+	"type": "module",
+	"main": "./dist/index.mjs",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.mjs"
+		}
+	},
+	"types": "./dist/index.d.ts",
+	"bin": {
+		"proto-to-trpc": "./dist/cli.mjs"
+	},
+	"files": ["dist", "README.md", "LICENSE", "CHANGELOG.md", "docs"],
+	"scripts": {
+		"build": "tsup",
+		"lint": "biome lint .",
+		"format": "biome format . --write",
+		"test": "vitest",
+		"codegen": "proto-to-trpc --proto_dir=./proto --out=./src/gen"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"keywords": [
+		"trpc",
+		"connectrpc",
+		"protobuf",
+		"codegen",
+		"typescript",
+		"nextjs"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/your-username/proto-to-trpc.git"
+	},
+	"bugs": {
+		"url": "https://github.com/your-username/proto-to-trpc/issues"
+	},
+	"homepage": "https://github.com/your-username/proto-to-trpc#readme",
+	"dependencies": {
+		"chokidar": "^3.6.0",
+		"fast-glob": "^3.3.2",
+		"protoc": "^25.2.0",
+		"yargs": "^17.7.2"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.0",
+		"@trpc/client": "^11.0.0-rc.0",
+		"@trpc/server": "^11.0.0-rc.0",
+		"@types/node": "^22.0.0",
+		"@types/yargs": "^17.0.32",
+		"@vitest/coverage-v8": "^2.0.0",
+		"@connectrpc/connect": "^1.4.0",
+		"tsup": "^8.0.1",
+		"typescript": "^5.6.3",
+		"vitest": "^2.0.0"
+	},
+	"peerDependencies": {
+		"@connectrpc/connect": ">=1.0.0",
+		"@trpc/server": ">=10.0.0",
+		"@trpc/client": ">=10.0.0"
+	},
+	"peerDependenciesMeta": {
+		"@connectrpc/connect": {
+			"optional": false
+		},
+		"@trpc/server": {
+			"optional": false
+		},
+		"@trpc/client": {
+			"optional": false
+		}
+	}
+}

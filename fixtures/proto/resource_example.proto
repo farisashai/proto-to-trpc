@@ -1,0 +1,116 @@
+syntax = "proto3";
+
+package example.v1;
+
+import "google/protobuf/timestamp.proto";
+
+/****************************************
+ * ENUMS
+ ****************************************/
+enum ResourceStatus {
+  RESOURCE_STATUS_UNSPECIFIED = 0;
+  RESOURCE_STATUS_ACTIVE = 1;
+  RESOURCE_STATUS_ARCHIVED = 2;
+}
+
+/****************************************
+ * ENTITY
+ ****************************************/
+message Resource {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  Metadata metadata = 4;
+
+  ResourceStatus status = 5;
+
+  google.protobuf.Timestamp created_at = 6;
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+/****************************************
+ * NESTED
+ ****************************************/
+message Metadata {
+  map<string, string> labels = 1;
+  repeated string tags = 2;
+}
+
+/****************************************
+ * CRUD REQUESTS/RESPONSES
+ ****************************************/
+message CreateResourceRequest {
+  string name = 1;
+  string description = 2;
+  Metadata metadata = 3;
+}
+
+message CreateResourceResponse {
+  Resource resource = 1;
+}
+
+message GetResourceRequest {
+  string id = 1;
+}
+
+message GetResourceResponse {
+  Resource resource = 1;
+}
+
+message UpdateResourceRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  Metadata metadata = 4;
+}
+
+message UpdateResourceResponse {
+  Resource resource = 1;
+}
+
+message DeleteResourceRequest {
+  string id = 1;
+}
+
+message DeleteResourceResponse {
+  bool success = 1;
+}
+
+/****************************************
+ * LIST REQUEST/RESPONSE
+ ****************************************/
+message ListResourcesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+
+  // optional filters/sorting
+  string filter = 3;
+  string sort_by = 4;
+}
+
+message ListResourcesResponse {
+  repeated Resource resources = 1;
+  string next_page_token = 2;
+}
+
+/****************************************
+ * SERVICE
+ ****************************************/
+service ResourceService {
+  rpc CreateResource(CreateResourceRequest)
+      returns (CreateResourceResponse);
+
+  rpc GetResource(GetResourceRequest)
+      returns (GetResourceResponse);
+
+  rpc UpdateResource(UpdateResourceRequest)
+      returns (UpdateResourceResponse);
+
+  rpc DeleteResource(DeleteResourceRequest)
+      returns (DeleteResourceResponse);
+
+  rpc ListResources(ListResourcesRequest)
+      returns (ListResourcesResponse);
+}
+
+
