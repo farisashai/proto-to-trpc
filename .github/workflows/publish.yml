@@ -51,17 +51,14 @@ jobs:
             echo "tag=latest" >> $GITHUB_OUTPUT
           fi
 
-      # 2. CRITICAL FIX: Update package.json version to match the git tag
-      #    (e.g., v0.1.5-beta.1 -> 0.1.5-beta.1)
+      # 2. Sync package.json version with Git tag
       - name: Sync package.json version with Tag
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
           echo "Setting package.json version to: $VERSION"
           npm version $VERSION --no-git-tag-version --allow-same-version
 
-      # 3. Publish using the synced version and the calculated dist-tag
+      # 3. Publish (OIDC handles auth automatically)
       - name: Publish to npm via OIDC
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           npm publish --provenance --access public --tag ${{ steps.disttag.outputs.tag }}
