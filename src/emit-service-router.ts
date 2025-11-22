@@ -13,6 +13,17 @@ export interface ServiceInfo {
 export interface EmitServiceRoutersOptions {
 	connectDir: string;
 	trpcDir: string;
+	queryVerbs?: string[];
+	mutationVerbs?: string[];
+}
+
+const DEFAULT_QUERY_VERBS = ["Get", "List"];
+const DEFAULT_MUTATION_VERBS = ["Create", "Update", "Delete"];
+
+function isQuery(name: string, queryVerbs: string[], mutationVerbs: string[]): boolean {
+	if (queryVerbs.some((prefix) => name.startsWith(prefix))) return true;
+	if (mutationVerbs.some((prefix) => name.startsWith(prefix))) return false;
+	return false;
 }
 
 function trimExtension(filePath: string): string {
@@ -30,17 +41,24 @@ export async function emitServiceRouters(
 
 	const services: ServiceInfo[] = [];
 
+	const queryVerbs = options.queryVerbs && options.queryVerbs.length > 0
+		? options.queryVerbs
+		: DEFAULT_QUERY_VERBS;
+	const mutationVerbs = options.mutationVerbs && options.mutationVerbs.length > 0
+		? options.mutationVerbs
+		: DEFAULT_MUTATION_VERBS;
+
 	for (const file of connectFiles) {
 		const moduleUrl = pathToFileURL(file).href;
 		const moduleExports: Record<string, unknown> = await import(moduleUrl);
 
 		for (const key of Object.keys(moduleExports)) {
-			const svc = moduleExports[key];
+			const svc = moduleExports[key] as any;
 			if (
 				svc &&
 				typeof svc === "object" &&
-				"typeName" in (svc as Record<string, unknown>) &&
-				"methods" in (svc as Record<string, unknown>)
+				"typeName" in svc &&
+				"methods" in svc
 			) {
 				const serviceName = key;
 				const serviceBaseName = serviceName.replace(/Service$/u, "");
@@ -55,15 +73,32 @@ export async function emitServiceRouters(
 				const relPath = path.relative(routerDir, file).replace(/\\/g, "/");
 				const connectImport = trimExtension(relPath);
 
+				// Generate static procedure definitions
+				const procedures: string[] = [];
+				const methods = Object.values(svc.methods) as any[];
+
+				for (const method of methods) {
+					const methodName = method.name;
+					const procedureType = isQuery(methodName, queryVerbs, mutationVerbs) ? "query" : "mutation";
+
+					procedures.push(`\t\t${methodName}: t.procedure
+\t\t\t.input(${serviceName}.methods.${methodName}.I)
+\t\t\t.output(${serviceName}.methods.${methodName}.O)
+\t\t\t.${procedureType}(async ({ input }) => client.${methodName}(input))`);
+				}
+
 				const code = `import { createClient } from "@connectrpc/connect";
 import { createConnectTransport } from "@connectrpc/connect-web";
-import { createServiceRouter } from "../routerFactory";
+import { t } from "../routerFactory";
 import { ${serviceName} } from "${connectImport}.js";
 
 export const ${serviceName}Router = (connectBaseUrl: string) => {
 	const transport = createConnectTransport({ baseUrl: connectBaseUrl });
 	const client = createClient(${serviceName}, transport);
-	return createServiceRouter(${serviceName}, client);
+
+	return t.router({
+${procedures.join(",\n")}
+	});
 };
 `;
 

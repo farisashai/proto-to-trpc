@@ -5,6 +5,7 @@ import { emitAppRouter } from "./emit-app-router";
 import { emitIndexFile } from "./emit-index";
 import { emitRouterFactory } from "./emit-router-factory";
 import { emitServiceRouters } from "./emit-service-router";
+import { postProcessPbFiles } from "./post-process-pb-files";
 import { runProtoc } from "./protoc";
 
 export interface CodegenOptions {
@@ -61,6 +62,9 @@ export async function runCodegen(options: CodegenOptions): Promise<void> {
 		protoDir: resolvedProtoDir,
 	});
 
+	log(onLog, "Post-processing protobuf declaration files...");
+	await postProcessPbFiles(connectOut);
+
 	log(onLog, "Emitting tRPC router factory...");
 	await emitRouterFactory(trpcOut, {
 		queryVerbs,
@@ -71,6 +75,8 @@ export async function runCodegen(options: CodegenOptions): Promise<void> {
 	const serviceInfoList = await emitServiceRouters({
 		connectDir: connectOut,
 		trpcDir: trpcOut,
+		queryVerbs,
+		mutationVerbs,
 	});
 
 	log(onLog, "Emitting appRouter...");

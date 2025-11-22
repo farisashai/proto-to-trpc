@@ -44,12 +44,10 @@ export function createServiceRouter<T extends AnyService>(
 	service: T,
 	client: Client<T>,
 ) {
-	const procedures: Record<
-		string,
-		ReturnType<typeof t.procedure.input>
-	> = {};
+	const procedures: Record<string, any> = {};
 
-	for (const method of service.methods as readonly MethodInfoUnary[]) {
+	// service.methods is an object, not an array - iterate over its values
+	for (const method of Object.values(service.methods) as readonly MethodInfoUnary[]) {
 		const name = method.name;
 		const fn = (client[name as keyof Client<T>] as CallableFunction).bind(client);
 

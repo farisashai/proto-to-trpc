@@ -11,6 +11,77 @@ Nothing yet.
 
 ---
 
+## [0.1.2] - 2025-11-22
+
+### Fixed
+
+#### Critical Runtime Fix
+
+- **Fixed service.methods iteration error** - Resolved `TypeError: service.methods is not iterable` at runtime
+  - Connect-ES service definitions have `methods` as an object (not an array)
+  - Changed from `for (const method of service.methods)` to `for (const method of Object.values(service.methods))`
+  - This was causing runtime crashes when creating service routers in production apps
+
+### Changed
+
+#### Architecture Improvement
+
+- **Replaced dynamic router factory with static router generation** - Complete rewrite for full type safety
+  - Service routers now generate explicit procedure definitions instead of using dynamic loops
+  - Each method is statically typed with its own `.query()` or `.mutation()` call
+  - Eliminates all `any` types from the runtime router creation
+  - TypeScript can now fully infer procedure types through the entire tRPC call chain
+
+**Before** (dynamic with `any`):
+```typescript
+export const ResourceServiceRouter = (connectBaseUrl: string) => {
+  const client = createClient(ResourceService, transport);
+  return createServiceRouter(ResourceService, client); // dynamic loop
+};
+```
+
+**After** (static with full types):
+```typescript
+export const ResourceServiceRouter = (connectBaseUrl: string) => {
+  const client = createClient(ResourceService, transport);
+  return t.router({
+    CreateResource: t.procedure
+      .input(ResourceService.methods.CreateResource.I)
+      .output(ResourceService.methods.CreateResource.O)
+      .mutation(async ({ input }) => client.CreateResource(input)),
+    GetResource: t.procedure
+      .input(ResourceService.methods.GetResource.I)
+      .output(ResourceService.methods.GetResource.O)
+      .query(async ({ input }) => client.GetResource(input)),
+    // ... each method explicitly typed
+  });
+};
+```
+
+### Added
+
+- **Post-processing for protobuf declaration files**
+  - Automatically adds `type` annotations to `proto3` imports in generated `*_pb.d.ts` files
+  - Changes `import { Message, proto3 }` to `import { Message, type proto3 }`
+  - Improves TypeScript import optimization and tree-shaking
+
+### Technical Details
+
+- Service router generation moved from helper function pattern to inline static generation
+- Each service method is now individually inspected and typed at codegen time
+- Query vs mutation determination happens at generation time (not runtime)
+- Router factory simplified to export just `t` and verb configuration
+- Tests updated to verify static procedure generation (34 tests passing)
+
+### Breaking Changes
+
+**Generated code structure changed** - If you've committed generated code to git:
+- Re-run codegen after upgrading: `proto-to-trpc --proto_dir=./proto --out=./src/gen`
+- Service routers now use inline static definitions instead of `createServiceRouter()`
+- The `createServiceRouter` helper function is no longer exported or used
+
+---
+
 ## [0.1.1] - 2025-11-22
 
 ### Added

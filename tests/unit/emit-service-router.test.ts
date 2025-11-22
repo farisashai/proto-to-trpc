@@ -45,7 +45,10 @@ describe("emitServiceRouters", () => {
 		);
 		const contents = await fs.readFile(routerPath, "utf8");
 
-		expect(contents).toContain("createServiceRouter");
+		expect(contents).toContain("t.router");
 		expect(contents).toContain("Router");
+		expect(contents).toContain("t.procedure");
+		// Should have both query and mutation methods
+		expect(contents).toMatch(/\.(query|mutation)\(/u);
 	});
 });

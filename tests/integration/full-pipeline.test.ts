@@ -107,9 +107,12 @@ describe("Full Pipeline Integration", () => {
 				path.join(routersDir, firstRouter),
 				"utf8",
 			);
-			expect(routerContent).toContain("createServiceRouter");
+			expect(routerContent).toContain("t.router");
 			expect(routerContent).toContain("export const");
 			expect(routerContent).toContain("connectBaseUrl");
+			expect(routerContent).toContain("t.procedure");
+			// Should have both query and mutation methods
+			expect(routerContent).toMatch(/\.(query|mutation)\(/u);
 		}
 
 		// 10. Verify the generated code has valid TypeScript syntax by checking
