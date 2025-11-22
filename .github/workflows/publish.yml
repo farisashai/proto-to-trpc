@@ -1,64 +1,52 @@
-name: Publish to npm
+name: Publish Package
 
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 permissions:
+  id-token: write  # Required for OIDC
   contents: read
-  id-token: write     # REQUIRED for npm OIDC
-  packages: write
 
 jobs:
   publish:
-    name: Publish Package to npm
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
+          # CRITICAL: Do NOT set registry-url here for OIDC. 
+          # It creates a .npmrc that blocks OIDC auth.
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v4
         with:
           version: 10
           run_install: false
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
 
-      - name: Build package
-        run: pnpm build
-
-      # 1. Parse the Git tag to determine the npm tag (beta vs latest)
-      - name: Determine npm dist-tag
-        id: disttag
+      # This step sets the package.json version to match the Git tag (v0.1.5-beta.4)
+      # And decides if it should be published as 'beta', 'rc', or 'latest'
+      - name: Sync Version & Tag
+        id: meta
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
-          echo "Detected git tag: $TAG"
-          
-          if [[ "$TAG" == *"-beta"* ]]; then
-            echo "tag=beta" >> $GITHUB_OUTPUT
-          elif [[ "$TAG" == *"-rc"* ]]; then
-            echo "tag=rc" >> $GITHUB_OUTPUT
-          else
-            echo "tag=latest" >> $GITHUB_OUTPUT
-          fi
-
-      # 2. Sync package.json version with Git tag
-      - name: Sync package.json version with Tag
-        run: |
+          # 1. Extract version from tag (remove 'v')
           VERSION=${GITHUB_REF#refs/tags/v}
-          echo "Setting package.json version to: $VERSION"
+          echo "Syncing package.json to version: $VERSION"
           npm version $VERSION --no-git-tag-version --allow-same-version
 
-      # 3. Publish (OIDC handles auth automatically)
-      - name: Publish to npm via OIDC
-        run: |
-          npm publish --provenance --access public --tag ${{ steps.disttag.outputs.tag }}
+          # 2. Determine npm tag
+          if [[ "$VERSION" == *"-beta"* ]]; then
+            echo "dist_tag=beta" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-rc"* ]]; then
+            echo "dist_tag=rc" >> $GITHUB_OUTPUT
+          else
+            echo "dist_tag=latest" >> $GITHUB_OUTPUT
+          fi
+
+      # Publish using the synced version and detected tag
+      - run: npm publish --provenance --access public --tag ${{ steps.meta.outputs.dist_tag }}
