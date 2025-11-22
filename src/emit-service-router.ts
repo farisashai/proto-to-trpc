@@ -95,8 +95,8 @@ export async function emitServiceRouters(
 					messageTypes.add(outputTypeName);
 
 					procedures.push(`\t\t${methodName}: t.procedure
-\t\t\t.input(${inputTypeName})
-\t\t\t.output(${outputTypeName})
+\t\t\t.input<${inputTypeName}>()
+\t\t\t.output<${outputTypeName}>()
 \t\t\t.${procedureType}(async ({ input }) => client.${methodName}(input))`);
 				}
 
@@ -106,7 +106,7 @@ export async function emitServiceRouters(
 import { createConnectTransport } from "@connectrpc/connect-web";
 import { t } from "../routerFactory";
 import { ${serviceName} } from "${connectImport}.js";
-import { ${messageTypeImports} } from "${pbImport}.js";
+import type { ${messageTypeImports} } from "${pbImport}.js";
 
 export const ${serviceName}Router = (connectBaseUrl: string) => {
 	const transport = createConnectTransport({ baseUrl: connectBaseUrl });
