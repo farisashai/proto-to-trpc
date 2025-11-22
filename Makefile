@@ -21,19 +21,6 @@ build:
 	pnpm build
 
 # ----------------------
-# HELP
-# ----------------------
-
-help:
-	@echo "Available targets:"
-	@echo "  make beta        - Create a new beta tag (v$(CURRENT_VERSION)-beta.*)"
-	@echo "  make rc          - Create a new rc tag (v$(CURRENT_VERSION)-rc.*)"
-	@echo "  make patch       - Create a new patch tag"
-	@echo "  make minor       - Create a new minor tag"
-	@echo "  make major       - Create a new major tag"
-	@echo "  make help        - Show this help message"
-
-# ----------------------
 # RELEASE TARGETS
 # ----------------------
 
@@ -43,7 +30,7 @@ beta: check-clean build
 	if [ -z "$$LAST_BETA" ]; then \
 	  NEW_TAG="v$(CURRENT_VERSION)-beta.0"; \
 	else \
-	  NEW_TAG=$$(node -p "const last='$$LAST_BETA'; const num=parseInt(last.split('.').pop()); console.log(last.replace(/\.[0-9]+$$/, '.' + (num + 1)))"); \
+	  NEW_TAG=$$(node -e "const last='$$LAST_BETA'; const num=parseInt(last.split('.').pop()); console.log(last.replace(/\.[0-9]+$$/, '.' + (num + 1)))"); \
 	fi; \
 	echo "Creating beta tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
@@ -55,14 +42,12 @@ rc: check-clean build
 	if [ -z "$$LAST_RC" ]; then \
 	  NEW_TAG="v$(CURRENT_VERSION)-rc.0"; \
 	else \
-	  NEW_TAG=$$(node -p "const last='$$LAST_RC'; const num=parseInt(last.split('.').pop()); console.log(last.replace(/\.[0-9]+$$/, '.' + (num + 1)))"); \
+	  NEW_TAG=$$(node -e "const last='$$LAST_RC'; const num=parseInt(last.split('.').pop()); console.log(last.replace(/\.[0-9]+$$/, '.' + (num + 1)))"); \
 	fi; \
 	echo "Creating rc tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
-# Note: The following targets create a tag based on package.json, 
-# but they do NOT update package.json. 
 patch: check-clean build
 	@NEW_VERSION=$(shell node -p "const v='$(CURRENT_VERSION)'.split('.'); v[2]++; v.join('.')"); \
 	NEW_TAG="v$$NEW_VERSION"; \
