@@ -31,9 +31,7 @@ pnpm codegen            # Run the CLI on local proto files (./proto → ./src/ge
 ```bash
 make tag-beta           # Create beta tag (v0.1.6-beta.0, beta.1, etc.)
 make tag-rc             # Create rc tag (v0.1.6-rc.0, rc.1, etc.)
-make tag-patch          # Bump patch version and create tag
-make tag-minor          # Bump minor version and create tag
-make tag-major          # Bump major version and create tag
+make tag                # Create tag (v0.1.6) matching package.json version
 make publish            # Publish to npm based on latest Git tag
 ```
 

@@ -55,8 +55,18 @@ describe("Full Pipeline Integration", () => {
 		const hasConnectFile = connectFiles.some((f) =>
 			f.match(/resource_example_connect\.(js|d\.ts)$/),
 		);
+		const hasConnectQueryFile = connectFiles.some((f) =>
+			f.match(/resource_example_connectquery\.ts$/),
+		);
 		expect(hasPbFile).toBe(true);
 		expect(hasConnectFile).toBe(true);
+		expect(hasConnectQueryFile).toBe(true);
+
+		const connectQueryContent = await fs.readFile(
+			path.join(connectDir, "resource_example_connectquery.ts"),
+			"utf8",
+		);
+		expect(connectQueryContent).toContain("service: ResourceService");
 
 		// 4. Verify tRPC files were generated
 		const trpcFiles = await fs.readdir(trpcDir);

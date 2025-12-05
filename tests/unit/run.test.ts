@@ -114,4 +114,46 @@ describe("runCodegen", () => {
 		expect(contents).toContain("Write");
 		expect(contents).toContain("Remove");
 	});
+
+	it("supports connect-only generation", async () => {
+		const fixturesProtoDir = path.join(__dirname, "../fixtures/simple");
+		const tmpDir = await fs.mkdtemp(
+			path.join(os.tmpdir(), "proto-to-trpc-run-connect-only-"),
+		);
+		const outDir = path.join(tmpDir, "generated");
+
+		await runCodegen({
+			protoDir: fixturesProtoDir,
+			outDir,
+			connectOnly: true,
+		});
+
+		const connectDir = path.join(outDir, "connect");
+		const trpcDir = path.join(outDir, "trpc");
+		const connectQueryPath = path.join(
+			connectDir,
+			"resource_example_connectquery.ts",
+		);
+
+		const connectExists = await fs
+			.stat(connectDir)
+			.then(() => true)
+			.catch(() => false);
+		const trpcExists = await fs
+			.stat(trpcDir)
+			.then(() => true)
+			.catch(() => false);
+
+		expect(connectExists).toBe(true);
+		expect(trpcExists).toBe(false);
+
+		const pkgJsonContent = await fs.readFile(
+			path.join(outDir, "package.json"),
+			"utf8",
+		);
+		expect(pkgJsonContent).toContain('"type": "module"');
+
+		const connectQueryContent = await fs.readFile(connectQueryPath, "utf8");
+		expect(connectQueryContent).toContain("service: ResourceService");
+	});
 });
