@@ -32,12 +32,14 @@ async function runOnce(
 	outDir: string,
 	queryVerbs?: string[],
 	mutationVerbs?: string[],
+	connectOnly?: boolean,
 ): Promise<void> {
 	await runCodegen({
 		protoDir,
 		outDir,
 		queryVerbs,
 		mutationVerbs,
+		connectOnly,
 		onLog: (message) => {
 			log(message);
 		},
@@ -73,6 +75,12 @@ async function main() {
 			describe:
 				"Comma-separated list of verbs to treat as mutations (default: Create,Update,Delete)",
 		})
+		.option("connect_only", {
+			type: "boolean",
+			default: false,
+			describe:
+				"Only generate ConnectRPC code (skip tRPC router generation)",
+		})
 		.strict()
 		.help()
 		.parse();
@@ -82,10 +90,11 @@ async function main() {
 	const watch = argv.watch as boolean;
 	const queryVerbs = parseVerbs(argv.query_verbs);
 	const mutationVerbs = parseVerbs(argv.mutation_verbs);
+	const connectOnly = argv.connect_only as boolean;
 
 	if (!watch) {
 		try {
-			await runOnce(protoDir, outDir, queryVerbs, mutationVerbs);
+			await runOnce(protoDir, outDir, queryVerbs, mutationVerbs, connectOnly);
 		} catch (error) {
 			const message =
 				error instanceof Error
@@ -115,7 +124,7 @@ async function main() {
 		log("Running codegen...");
 
 		try {
-			await runOnce(protoDir, outDir, queryVerbs, mutationVerbs);
+			await runOnce(protoDir, outDir, queryVerbs, mutationVerbs, connectOnly);
 			log("Codegen finished.");
 		} catch (error) {
 			const message =

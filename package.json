@@ -1,6 +1,6 @@
 {
 	"name": "proto-to-trpc",
-	"version": "0.2.0",
+	"version": "0.2.1",
 	"description": "Generate ConnectRPC TypeScript clients and fully-typed tRPC routers from .proto files using a simple CLI.",
 	"license": "MIT",
 	"type": "module",
@@ -24,7 +24,8 @@
 		"test:watch": "vitest --watch",
 		"test:coverage": "vitest --coverage",
 		"codegen": "node ./dist/cli.mjs --proto_dir=./proto --out=./src/gen",
-		"codegen:fixtures": "bash scripts/codegen-fixtures.sh"
+		"codegen:fixtures": "bash scripts/codegen-fixtures.sh",
+		"codegen:fixtures:connect-only": "bash scripts/codegen-connect.sh"
 	},
 	"engines": {
 		"node": ">=18.0.0"
