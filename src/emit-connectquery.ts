@@ -57,8 +57,9 @@ export async function emitConnectQuery(
 			) {
 				const serviceName = key;
 				// biome-ignore lint/suspicious/noExplicitAny: Dynamic introspection of Connect service method definitions
-				const methods = Object.values(svc.methods) as any[];
-				const methodNames = methods.map((m) => m.name);
+				// Use Object.keys to get the camelCase property names (e.g., "getApiKeys")
+				// rather than the PascalCase m.name values (e.g., "GetApiKeys")
+				const methodNames = Object.keys(svc.methods);
 
 				if (methodNames.length > 0) {
 					serviceExports.push({ serviceName, methodNames });

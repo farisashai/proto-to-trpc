@@ -8,8 +8,8 @@ SHELL := /bin/bash
 
 PKG := proto-to-trpc
 
-# Current version from package.json
-CURRENT_VERSION := $(shell node -p "require('./package.json').version")
+# Current version from package.json (this is the source of truth)
+VERSION := $(shell node -p "require('./package.json').version")
 
 # Ensure working tree clean
 check-clean:
@@ -26,48 +26,41 @@ build:
 # ----------------------
 # RELEASE TARGETS
 # ----------------------
+# All tags are based on the version in package.json.
+# To release a new version: update package.json, commit, then run the appropriate tag command.
 
-# Creates the tag (e.g. make tag-beta)
+# Pre-release tags: auto-increment suffix only if same base version already tagged
 tag-beta: check-clean build
-	@LAST_BETA=$$(git tag --list "v$(CURRENT_VERSION)-beta.*" | sort -V | tail -n1); \
-	if [ -z "$$LAST_BETA" ]; then \
-	  NEW_TAG="v$(CURRENT_VERSION)-beta.0"; \
+	@LAST=$$(git tag --list "v$(VERSION)-beta.*" | sort -V | tail -n1); \
+	if [ -z "$$LAST" ]; then \
+	  NEW_TAG="v$(VERSION)-beta.0"; \
 	else \
-	  NEW_TAG=$$(node -e "const last='$$LAST_BETA'; const num=parseInt(last.split('.').pop()); console.log(last.replace(/\.[0-9]+$$/, '.' + (num + 1)))"); \
+	  NEW_TAG=$$(node -e "const last='$$LAST'; const num=parseInt(last.split('.').pop()); console.log(last.replace(/\.[0-9]+$$/, '.' + (num + 1)))"); \
 	fi; \
 	echo "Creating beta tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
 tag-rc: check-clean build
-	@LAST_RC=$$(git tag --list "v$(CURRENT_VERSION)-rc.*" | sort -V | tail -n1); \
-	if [ -z "$$LAST_RC" ]; then \
-	  NEW_TAG="v$(CURRENT_VERSION)-rc.0"; \
+	@LAST=$$(git tag --list "v$(VERSION)-rc.*" | sort -V | tail -n1); \
+	if [ -z "$$LAST" ]; then \
+	  NEW_TAG="v$(VERSION)-rc.0"; \
 	else \
-	  NEW_TAG=$$(node -e "const last='$$LAST_RC'; const num=parseInt(last.split('.').pop()); console.log(last.replace(/\.[0-9]+$$/, '.' + (num + 1)))"); \
+	  NEW_TAG=$$(node -e "const last='$$LAST'; const num=parseInt(last.split('.').pop()); console.log(last.replace(/\.[0-9]+$$/, '.' + (num + 1)))"); \
 	fi; \
 	echo "Creating rc tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
-tag-patch: check-clean build
-	@NEW_VERSION=$(shell node -p "const v='$(CURRENT_VERSION)'.split('.'); v[2]++; v.join('.')"); \
-	NEW_TAG="v$$NEW_VERSION"; \
-	echo "Creating patch tag: $$NEW_TAG"; \
-	git tag $$NEW_TAG; \
-	git push origin $$NEW_TAG
-
-tag-minor: check-clean build
-	@NEW_VERSION=$(shell node -p "const v='$(CURRENT_VERSION)'.split('.'); v[1]++; v[2]=0; v.join('.')"); \
-	NEW_TAG="v$$NEW_VERSION"; \
-	echo "Creating minor tag: $$NEW_TAG"; \
-	git tag $$NEW_TAG; \
-	git push origin $$NEW_TAG
-
-tag-major: check-clean build
-	@NEW_VERSION=$(shell node -p "const v='$(CURRENT_VERSION)'.split('.'); v[0]++; v[1]=0; v[2]=0; v.join('.')"); \
-	NEW_TAG="v$$NEW_VERSION"; \
-	echo "Creating major tag: $$NEW_TAG"; \
+# Stable release: tags exactly the version in package.json
+# Update package.json version first, commit, then run: make tag
+tag: check-clean build
+	@NEW_TAG="v$(VERSION)"; \
+	if git rev-parse "$$NEW_TAG" >/dev/null 2>&1; then \
+	  echo "ERROR: Tag $$NEW_TAG already exists. Update package.json version first."; \
+	  exit 1; \
+	fi; \
+	echo "Creating release tag: $$NEW_TAG"; \
 	git tag $$NEW_TAG; \
 	git push origin $$NEW_TAG
 
